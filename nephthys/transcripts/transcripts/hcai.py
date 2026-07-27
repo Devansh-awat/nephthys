@@ -39,4 +39,3 @@ if your question has been answered, please hit the button below to mark it as re
         "We recommend using the Exa API! The old search API (https://search.hackclub.com/) is deprecated. "
         "Check out the docs here: https://docs.ai.hackclub.com/api/exa.html"
     )
-
