@@ -12,6 +12,7 @@ from nephthys.macros.max_tokens import MaxTokens
 from nephthys.macros.no_money import NoMoney
 from nephthys.macros.reopen import Reopen
 from nephthys.macros.resolve import Resolve
+from nephthys.macros.search import Search
 from nephthys.macros.shipcertqueue import ShipCertQueue
 from nephthys.macros.shipwrights import Shipwrights
 from nephthys.macros.team_tag import TeamTag
@@ -42,6 +43,7 @@ macro_list: list[type[Macro]] = [
     VoteQueue,
     MaxTokens,
     NoMoney,
+    Search,
 ]
 
 macros = [macro() for macro in macro_list]
