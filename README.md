@@ -32,17 +32,17 @@ Sometimes it’s nice to be able to do things quickly... Here’s where macros c
 - `?hackatime` - redirect to #hackatime-help
 - more to come?? feel free to PR your own into hackclub/nephthys or tell me what you want
 
-#### Flavortown-specific macros
+#### Custom Program Macros
 
-- `?shipcertqueue` - tell them to wait and vote because there's a backlog of ships
-- `?votequeue` - there's a large voting backlog, please be patient
-- `?votequality` - low-quality votes get discarded by the platform; please vote well!
+Helpers and admins can add, update, list, and delete custom program macros without code changes:
 
-#### HCAI-specific macros
-
-- `?search` - web search / Exa API deprecation notice and link
-- `?max_tokens` - explanation of max_tokens for OpenRouter request limits
-- `?no_money` - inform user that credits are temporarily depleted
+- **Add/Update**: `/add-<program>-macros ?<macro_name> <markdown response> [--no-resolve] [--can-run-on-closed]`
+  - Example: `/add-hcai-macros ?models Here are the available AI models: ... --no-resolve`
+  - Flags:
+    - `--no-resolve`: Keep the ticket open (default resolves the ticket)
+    - `--can-run-on-closed`: Allow running this macro on closed tickets (default is false)
+- **Delete**: `/delete-<program>-macros ?<macro_name>`
+- **List**: `/list-<program>-macros`
 
 ### Stale
 

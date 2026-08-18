@@ -1,6 +1,7 @@
 from typing import Any
 
 from nephthys.database.enums import TicketStatus
+from nephthys.database.tables import Macro as MacroTable
 from nephthys.database.tables import Ticket
 from nephthys.database.tables import User
 from nephthys.macros.faq import FAQ
@@ -8,20 +9,15 @@ from nephthys.macros.fraud import Fraud
 from nephthys.macros.hackatime import Hackatime
 from nephthys.macros.hello_world import HelloWorld
 from nephthys.macros.identity import Identity
-from nephthys.macros.max_tokens import MaxTokens
-from nephthys.macros.no_money import NoMoney
 from nephthys.macros.reopen import Reopen
 from nephthys.macros.resolve import Resolve
-from nephthys.macros.search import Search
-from nephthys.macros.shipcertqueue import ShipCertQueue
 from nephthys.macros.shipwrights import Shipwrights
 from nephthys.macros.team_tag import TeamTag
 from nephthys.macros.thread import Thread
 from nephthys.macros.trigger_daily_stats import DailyStats
 from nephthys.macros.trigger_fulfillment_reminder import FulfillmentReminder
 from nephthys.macros.types import Macro
-from nephthys.macros.vote_quality import VoteQuality
-from nephthys.macros.vote_queue import VoteQueue
+from nephthys.macros.types import ReplyMacro
 from nephthys.utils.env import env
 from nephthys.utils.logging import send_heartbeat
 
@@ -31,7 +27,6 @@ macro_list: list[type[Macro]] = [
     FAQ,
     Identity,
     Fraud,
-    ShipCertQueue,
     Thread,
     Reopen,
     DailyStats,
@@ -39,11 +34,6 @@ macro_list: list[type[Macro]] = [
     Shipwrights,
     TeamTag,
     Hackatime,
-    VoteQuality,
-    VoteQueue,
-    MaxTokens,
-    NoMoney,
-    Search,
 ]
 
 macros = [macro() for macro in macro_list]
@@ -64,18 +54,40 @@ async def run_macro(
             text=msg,
         )
 
+    target_macro: Macro | None = None
     for macro in macros:
         if name in macro.all_aliases():
-            if not macro.can_run_on_closed and ticket.status == TicketStatus.CLOSED:
-                await error_msg(f"`?{name}` cannot be run on a closed ticket.")
-                return False
-            new_kwargs = kwargs.copy()
-            new_kwargs["text"] = text
-            await macro.run(ticket, helper, **new_kwargs)
-            await env.slack_client.chat_delete(
-                channel=env.slack_help_channel, ts=macro_ts, token=env.slack_user_token
+            target_macro = macro
+            break
+
+    if not target_macro:
+        db_macro = (
+            await MacroTable.objects()
+            .where(
+                (MacroTable.name == name.lower())
+                & (MacroTable.program == env.program)
             )
-            return True
+            .first()
+        )
+        if db_macro:
+            target_macro = ReplyMacro()
+            target_macro.name = db_macro.name
+            target_macro.message = db_macro.message
+            target_macro.resolve_ticket = db_macro.resolve_ticket
+            target_macro.can_run_on_closed = db_macro.can_run_on_closed
+
+    if target_macro:
+        if not target_macro.can_run_on_closed and ticket.status == TicketStatus.CLOSED:
+            await error_msg(f"`?{name}` cannot be run on a closed ticket.")
+            return False
+
+        new_kwargs = kwargs.copy()
+        new_kwargs["text"] = text
+        await target_macro.run(ticket, helper, **new_kwargs)
+        await env.slack_client.chat_delete(
+            channel=env.slack_help_channel, ts=macro_ts, token=env.slack_user_token
+        )
+        return True
 
     await error_msg(f"`?{name}` is not a valid macro.")
     await send_heartbeat(

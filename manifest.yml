@@ -13,7 +13,30 @@
         "bot_user": {
             "display_name": "helper heidi",
             "always_online": false
-        }
+        },
+        "slash_commands": [
+            {
+                "command": "/add-{program}-macros",
+                "url": "https://nephthys.hackclub.com/slack/events",
+                "description": "Add or update a custom macro for this program",
+                "usage_hint": "?<macro_name> <markdown_response> [--no-resolve] [--can-run-on-closed]",
+                "should_escape": false
+            },
+            {
+                "command": "/delete-{program}-macros",
+                "url": "https://nephthys.hackclub.com/slack/events",
+                "description": "Delete a custom macro for this program",
+                "usage_hint": "?<macro_name>",
+                "should_escape": false
+            },
+            {
+                "command": "/list-{program}-macros",
+                "url": "https://nephthys.hackclub.com/slack/events",
+                "description": "List all custom macros for this program",
+                "usage_hint": "",
+                "should_escape": false
+            }
+        ]
     },
     "oauth_config": {
         "scopes": {
